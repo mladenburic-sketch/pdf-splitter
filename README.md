@@ -11,7 +11,7 @@ A web application for splitting PDF files containing multiple invoices into indi
 - Download individual files or complete ZIP archive
 - Command-line interface also available
 
-## Instalacija
+## Installation
 
 ```bash
 pip install -r requirements.txt
@@ -39,15 +39,14 @@ python -m streamlit run app.py
 python src/main.py input/your_file.pdf
 ```
 
-## Struktura projekta
+## Project Structure
 
 ```
 pdfSplitter/
-├── src/              # Izvorni kod
-├── input/            # Ulazni PDF fajlovi
-├── output/           # Izlazni PDF fajlovi
-├── tests/            # Testovi
-├── requirements.txt  # Python zavisnosti
-└── README.md         # Dokumentacija
+├── src/              # Source code
+├── input/            # Input PDF files
+├── output/           # Output PDF files
+├── tests/            # Tests
+├── requirements.txt  # Python dependencies
+└── README.md         # Documentation
 ```
-

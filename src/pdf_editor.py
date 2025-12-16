@@ -67,33 +67,37 @@ class PDFEditor:
             # Prođi kroz sve stranice
             for page_num in range(len(doc)):
                 page = doc[page_num]
+                
+                # Pronađi sve instance starog teksta
+                text_instances = page.search_for(old_text)
             
-            # Pronađi sve instance starog teksta
-            text_instances = page.search_for(old_text)
+                # Prvo prikupi sve redakcije i podatke za umetanje teksta
+                text_insertions = []
+                for inst in text_instances:
+                    # Dodaj redakciju (ne primenjuj još)
+                    page.add_redact_annot(inst)
+                    
+                    # Sačuvaj podatke za umetanje teksta pre primene redakcija
+                    rect_height = inst.height
+                    font_size = rect_height * 0.8  # Približno 80% visine
+                    point = fitz.Point(inst.x0, inst.y1 - (rect_height - font_size) / 2)
+                    text_insertions.append((point, font_size, new_text))
             
-            # Zameni svaku instancu
-            for inst in text_instances:
-                # Obriši stari tekst
-                page.add_redact_annot(inst)
-                page.apply_redactions()
-                
-                # Dodaj novi tekst na istu poziciju
-                # Izračunaj font size na osnovu visine instance
-                rect_height = inst.height
-                font_size = rect_height * 0.8  # Približno 80% visine
-                
-                # Pronađi poziciju za novi tekst
-                point = fitz.Point(inst.x0, inst.y1 - (rect_height - font_size) / 2)
-                
-                # Dodaj novi tekst
-                page.insert_text(
-                    point,
-                    new_text,
-                    fontsize=font_size,
+                # Primeni sve redakcije odjednom
+                if text_instances:
+                    page.apply_redactions()
+            
+                # Zatim umetni sve nove tekstove
+                for point, font_size, text in text_insertions:
+                    page.insert_text(
+                        point,
+                            text,
+                        fontsize=font_size,
                     color=(0, 0, 0)  # Crna boja
                 )
             
-            # Sačuvaj izmenjeni PDF
+                # Sačuvaj izmenjeni PDF
+                doc.save(output_path)
             doc.save(output_path)
         finally:
             # Uvek zatvori dokument, čak i ako se desi izuzetak
@@ -136,32 +140,40 @@ class PDFEditor:
             try:
                 # Prođi kroz sve stranice
                 for page_num in range(len(doc)):
-                page = doc[page_num]
-                
-                # Za svaku zamenu
-                for old_text, new_text in replacements.items():
-                    # Pronađi sve instance starog teksta
-                    text_instances = page.search_for(old_text)
+                    page = doc[page_num]
                     
-                    # Zameni svaku instancu
-                    for inst in text_instances:
-                        # Obriši stari tekst
-                        page.add_redact_annot(inst)
+                    # Prvo prikupi sve redakcije i podatke za umetanje teksta
+                    text_insertions = []
+                    for old_text, new_text in replacements.items():
+                        # Pronađi sve instance starog teksta
+                        text_instances = page.search_for(old_text)
+                        
+                        # Prikupi sve redakcije i podatke za umetanje
+                        for inst in text_instances:
+                            # Dodaj redakciju (ne primenjuj još)
+                            page.add_redact_annot(inst)
+                            
+                            # Sačuvaj podatke za umetanje teksta pre primene redakcija
+                            rect_height = inst.height
+                            font_size = rect_height * 0.8
+                            point = fitz.Point(inst.x0, inst.y1 - (rect_height - font_size) / 2)
+                            text_insertions.append((point, font_size, new_text))
+                
+                    # Primeni sve redakcije odjednom
+                    if text_insertions:
                         page.apply_redactions()
-                        
-                        # Dodaj novi tekst
-                        rect_height = inst.height
-                        font_size = rect_height * 0.8
-                        point = fitz.Point(inst.x0, inst.y1 - (rect_height - font_size) / 2)
-                        
+                    
+                    # Zatim umetni sve nove tekstove
+                    for point, font_size, text in text_insertions:
                         page.insert_text(
                             point,
-                            new_text,
-                            fontsize=font_size,
-                            color=(0, 0, 0)
-                        )
+                        text,
+                        fontsize=font_size,
+                        color=(0, 0, 0)
+                    )
             
                 # Sačuvaj izmenjeni PDF
+                doc.save(output_path)
                 doc.save(output_path)
             finally:
                 # Uvek zatvori dokument, čak i ako se desi izuzetak

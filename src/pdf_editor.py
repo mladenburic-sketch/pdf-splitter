@@ -63,10 +63,10 @@ class PDFEditor:
         
         # Otvori PDF
         doc = fitz.open(str(self.input_path))
-        
-        # Prođi kroz sve stranice
-        for page_num in range(len(doc)):
-            page = doc[page_num]
+        try:
+            # Prođi kroz sve stranice
+            for page_num in range(len(doc)):
+                page = doc[page_num]
             
             # Pronađi sve instance starog teksta
             text_instances = page.search_for(old_text)
@@ -92,10 +92,12 @@ class PDFEditor:
                     fontsize=font_size,
                     color=(0, 0, 0)  # Crna boja
                 )
-        
-        # Sačuvaj izmenjeni PDF
-        doc.save(output_path)
-        doc.close()
+            
+            # Sačuvaj izmenjeni PDF
+            doc.save(output_path)
+        finally:
+            # Uvek zatvori dokument, čak i ako se desi izuzetak
+            doc.close()
         
         return output_path
     
@@ -131,9 +133,9 @@ class PDFEditor:
         if PYMUPDF_AVAILABLE:
             # Otvori PDF
             doc = fitz.open(str(self.input_path))
-            
-            # Prođi kroz sve stranice
-            for page_num in range(len(doc)):
+            try:
+                # Prođi kroz sve stranice
+                for page_num in range(len(doc)):
                 page = doc[page_num]
                 
                 # Za svaku zamenu
@@ -159,9 +161,11 @@ class PDFEditor:
                             color=(0, 0, 0)
                         )
             
-            # Sačuvaj izmenjeni PDF
-            doc.save(output_path)
-            doc.close()
+                # Sačuvaj izmenjeni PDF
+                doc.save(output_path)
+            finally:
+                # Uvek zatvori dokument, čak i ako se desi izuzetak
+                doc.close()
             
             return output_path
         else:
